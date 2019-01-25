@@ -1,0 +1,133 @@
+\documentclass[textwidth-limit=45]{bxjsarticle}
+\usepackage{unit, amsmath, ascmac}
+\usepackage[dvipdfmx]{graphicx}
+
+\begin{document}
+\title{カルマンフィルタ}
+\maketitle
+
+\section{システムモデル}
+内部状態 $x_t$ を含むシステムのダイナミクスが以下のように記述される。
+\begin{equation}
+  \label{sys_update}
+  x_t = A x_{t-1} + B v_t
+\end{equation}
+内部状態から観測値が以下のように得られる。
+\begin{equation}
+  \label{observation}
+  y_t = C x_t + w_t
+\end{equation}  
+$v_t$, $w_t$ は正規分布に従う雑音である。
+\begin{align}
+  v_t &\sim \mathrm N(0, Q) \\
+  w_t &\sim \mathrm N(0, R)
+\end{align}
+初期状態もまた正規分布に従うとする。
+\begin{equation}
+  x_0 \sim \mathrm N(\mu_{0|0}, P_{0|0})
+\end{equation}
+
+このようなシステムにおいて、観測値をもとに、内部状態の最適な（平均二乗誤差を最小化する）推定を与えるのがカルマンフィルタである。
+
+\section{確率分布に基づく導出}
+具体的な計算は後で述べるが、根本的には、
+初期状態を正規分布で与え、システムモデルが線形であり、
+雑音も正規分布で与えられているため、観測後の状態の条件付き分布が
+再び正規分布になるというのが重要である（これは正規分布が持つ良い性質である）。
+そのため、繰り返し計算を続けることが可能である。
+また、正規分布においては誤差の最小二乗化は分布の期待値で達成されるので、
+結局、最小二乗に基づく推定値は条件付き分布の期待値と一致する。
+
+$y_1, \dots, y_{t-1}$ が与えられた時の$x_{t-1}$の条件付き分布を
+\begin{equation}
+  p(x_{t-1}|y_1, \dots, y_{t-1}) = \mathrm N(\mu_{t-1|t-1}, P_{t-1|t-1})
+\end{equation}
+とし、$x_t$の条件付き分布を
+\begin{equation}
+  p(x_{t}|y_1, \dots, y_{t-1}) = \mathrm N(\mu_{t|t-1}, P_{t|t-1})
+\end{equation}
+とする。
+
+\eqref{sys_update}は確率変数の線形変換であるから、
+期待値と共分散行列がどのように変換されるかはすぐにわかり、
+\begin{align}
+  \mu_{t|t-1} &= A \mu_{t-1|t-1} \\
+  P_{t|t-1} &= A P_{t-1|t-1} A^T + B Q B^T
+\end{align}
+である。（カルマンフィルタの予測ステップ）
+
+さらに$y_t$を観測した後の$x_t$を推定する必要があるから、
+$x_t, y_t$の同時分布を求める必要がある。
+すなわち、$y_1, \dots, y_{t-1}$ が与えられた時の
+\begin{equation}
+  \begin{pmatrix}
+    x_t \\
+    y_t
+  \end{pmatrix} =
+  \begin{pmatrix}
+    I \\
+    C
+  \end{pmatrix} x_t +
+  \begin{pmatrix}
+    O \\
+    I
+  \end{pmatrix} w_t
+\end{equation}
+の条件付き分布を求める。
+この式全体を確率変数の線形変換として見れば、期待値と共分散行列は同じように計算できる。
+期待値は、
+\begin{equation}
+  \begin{pmatrix}
+    I \\
+    C
+  \end{pmatrix} \mu_{t|t-1}
+\end{equation}
+であり、共分散行列は、
+\begin{equation}
+  \begin{pmatrix}
+    I \\
+    C
+  \end{pmatrix} P_{t|t-1}
+  \begin{pmatrix}
+    I & C^T
+  \end{pmatrix} + 
+  \begin{pmatrix}
+    O \\
+    I
+  \end{pmatrix} R
+  \begin{pmatrix}
+    O & I
+  \end{pmatrix} =
+  \begin{pmatrix}
+    P_{t|t-1} & P_{t|t-1} C^T \\
+    C P_{t|t-1} & C P_{t|t-1} C^T + R
+  \end{pmatrix}
+\end{equation}
+である。
+
+ここで、さらに$y_t$を観測した後の$x_t$の条件付き分布
+\begin{equation}
+  p(x_{t}|y_1, \dots, y_{t}) = \mathrm N(\mu_{t|t}, P_{t|t})
+\end{equation}
+を求めたい。これは正規分布に対する条件付き分布の一般的な結果を使って計算できる。
+
+期待値は、
+\begin{equation}
+  \mu_{t|t} = \mu_{t|t-1} + P_{t|t-1}C^T (C P_{t|t-1} C^T + R)^{-1} (y_t - C\mu_{t|t-1})  
+\end{equation}
+であり、共分散行列は、
+\begin{equation}
+  P_{t|t} = P_{t|t-1} - P_{t|t-1} C^T (C P_{t|t-1} C^T + R)^{-1} C P_{t|t-1}
+\end{equation}
+である。
+これらはカルマンゲイン
+\begin{equation}
+  G_t = P_{t|t-1} C^T (C P_{t|t-1} C^T + R)^{-1}
+\end{equation}
+を定義すると、以下のように書くこともできる。（カルマンフィルタの更新ステップ）
+\begin{align}
+  \mu_{t|t} &= \mu_{t|t-1} + G_t (y_t - C\mu_{t|t-1})  \\
+  P_{t|t} &= (I- G_t C) P_{t|t-1}
+\end{align}
+
+\end{document}
