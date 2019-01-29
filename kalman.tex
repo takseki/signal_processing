@@ -1,5 +1,5 @@
 \documentclass[textwidth-limit=45]{bxjsarticle}
-\usepackage{amsmath, ascmac}
+\usepackage{amsmath, ascmac, bm}
 \usepackage[dvipdfmx]{graphicx}
 
 \begin{document}
@@ -10,21 +10,22 @@
 内部状態 $x_t$ を含むシステムのダイナミクスが以下のように記述される。
 \begin{equation}
   \label{sys_update}
-  x_t = A x_{t-1} + B v_t
+  \bm x_t = A \bm x_{t-1} + B \bm v_t
 \end{equation}
 内部状態から観測値が以下のように得られる。
 \begin{equation}
   \label{observation}
-  y_t = C x_t + w_t
+  \bm y_t = C \bm x_t + \bm w_t
 \end{equation}  
-$v_t$, $w_t$ は正規分布に従う雑音である。
+ただし、状態変数、雑音はベクトルとし、大文字の係数は行列である。
+$\bm v_t$, $\bm w_t$ は正規分布に従う雑音である。
 \begin{align}
-  v_t &\sim \mathrm N(0, Q) \\
-  w_t &\sim \mathrm N(0, R)
+  \bm v_t &\sim \mathcal N(\bm 0, Q) \\
+  \bm w_t &\sim \mathcal N(\bm 0, R)
 \end{align}
 初期状態もまた正規分布に従うとする。
 \begin{equation}
-  x_0 \sim \mathrm N(\mu_{0|0}, P_{0|0})
+  \bm x_0 \sim \mathcal N(\bm \mu_{0|0}, P_{0|0})
 \end{equation}
 
 このようなシステムにおいて、観測値をもとに、内部状態の最適な（平均二乗誤差を最小化する）推定を与えるのがカルマンフィルタである。
@@ -38,40 +39,40 @@ $v_t$, $w_t$ は正規分布に従う雑音である。
 また、正規分布においては誤差の最小二乗化は分布の期待値で達成されるので、
 結局、最小二乗に基づく推定値は条件付き分布の期待値と一致する。
 
-$y_1, \dots, y_{t-1}$ が与えられた時の$x_{t-1}$の条件付き分布を
+$\bm y_1, \dots, \bm y_{t-1}$ が与えられた時の$\bm x_{t-1}$の条件付き分布を
 \begin{equation}
-  p(x_{t-1}|y_1, \dots, y_{t-1}) = \mathrm N(\mu_{t-1|t-1}, P_{t-1|t-1})
+  p(\bm x_{t-1}|\bm y_1, \dots, \bm y_{t-1}) = \mathcal N(\bm \mu_{t-1|t-1}, P_{t-1|t-1})
 \end{equation}
-とし、$x_t$の条件付き分布を
+とし、$\bm x_t$の条件付き分布を
 \begin{equation}
-  p(x_{t}|y_1, \dots, y_{t-1}) = \mathrm N(\mu_{t|t-1}, P_{t|t-1})
+  p(\bm x_{t}|\bm y_1, \dots, \bm y_{t-1}) = \mathcal N(\bm \mu_{t|t-1}, P_{t|t-1})
 \end{equation}
 とする。
 
 \eqref{sys_update}は確率変数の線形変換であるから、
 期待値と共分散行列がどのように変換されるかはすぐにわかり、
 \begin{align}
-  \mu_{t|t-1} &= A \mu_{t-1|t-1} \\
+  \bm \mu_{t|t-1} &= A \bm \mu_{t-1|t-1} \\
   P_{t|t-1} &= A P_{t-1|t-1} A^T + B Q B^T
 \end{align}
 である。（カルマンフィルタの予測ステップ）
 
-さらに$y_t$を観測した後の$x_t$を推定する必要があるから、
-$x_t, y_t$の同時分布を求める必要がある。
-すなわち、$y_1, \dots, y_{t-1}$ が与えられた時の
+さらに$\bm y_t$を観測した後の$\bm x_t$を推定する必要があるから、
+$\bm x_t, \bm y_t$の同時分布を求める必要がある。
+すなわち、$\bm y_1, \dots, \bm y_{t-1}$ が与えられた時の
 \begin{equation}
   \begin{pmatrix}
-    x_t \\
-    y_t
+    \bm x_t \\
+    \bm y_t
   \end{pmatrix} =
   \begin{pmatrix}
     I \\
     C
-  \end{pmatrix} x_t +
+  \end{pmatrix} \bm x_t +
   \begin{pmatrix}
     O \\
     I
-  \end{pmatrix} w_t
+  \end{pmatrix} \bm w_t
 \end{equation}
 の条件付き分布を求める。
 この式全体を確率変数の線形変換として見れば、期待値と共分散行列は先ほどと同じように計算できる。
@@ -80,7 +81,7 @@ $x_t, y_t$の同時分布を求める必要がある。
   \begin{pmatrix}
     I \\
     C
-  \end{pmatrix} \mu_{t|t-1}
+  \end{pmatrix} \bm \mu_{t|t-1}
 \end{equation}
 であり、共分散行列は、
 \begin{equation}
@@ -104,37 +105,37 @@ $x_t, y_t$の同時分布を求める必要がある。
   \end{pmatrix}
 \end{equation}
 である。
-ここで、さらに$y_t$を観測した後の$x_t$の条件付き分布
+ここで、さらに$\bm y_t$を観測した後の$\bm x_t$の条件付き分布
 \begin{equation}
-  p(x_{t}|y_1, \dots, y_{t}) = \mathrm N(\mu_{t|t}, P_{t|t})
+  p(\bm x_{t}|\bm y_1, \dots, \bm y_{t}) = \mathrm N(\bm \mu_{t|t}, P_{t|t})
 \end{equation}
 を求めたい。これは正規分布に対する条件付き分布の一般的な結果
 \footnote{
   $\begin{pmatrix}
-    x_{a} \\
-    x_{b}
+    \bm x_{a} \\
+    \bm x_{b}
   \end{pmatrix}
   $が期待値
   $\begin{pmatrix}
-    \mu_{a} \\
-    \mu_{b}
+    \bm \mu_{a} \\
+    \bm \mu_{b}
   \end{pmatrix}
   $, 共分散行列
   $\begin{pmatrix}
     \Sigma_{aa} & \Sigma_{ab} \\
     \Sigma_{ba} & \Sigma_{bb}
   \end{pmatrix}
-  $の正規分布であるとき、$x_b$を与えたときの$x_a$の条件付き分布は正規分布となり、
+  $の正規分布であるとき、$\bm x_b$を与えたときの$\bm x_a$の条件付き分布は正規分布となり、
   期待値と共分散行列は以下のようになる。
   \begin{align}
-    \mu_{a|b} &= \mu_{a} + \Sigma_{ab} \Sigma_{bb}^{-1} (x_b - \mu_{b}) \\
+    \bm \mu_{a|b} &= \bm \mu_{a} + \Sigma_{ab} \Sigma_{bb}^{-1} (\bm x_b - \bm \mu_{b}) \\
     \Sigma_{a|b} &= \Sigma_{aa} - \Sigma_{ab} \Sigma_{bb}^{-1} \Sigma_{ba}
   \end{align}
   この導出は例えば、ビショップの「2.3.1 条件付きガウス分布」に載っている。
 }
 を使って計算できる。期待値と共分散行列はそれぞれ、
 \begin{align}
-  \mu_{t|t} &= \mu_{t|t-1} + P_{t|t-1}C^T (C P_{t|t-1} C^T + R)^{-1} (y_t - C\mu_{t|t-1})  \\
+  \bm \mu_{t|t} &= \bm \mu_{t|t-1} + P_{t|t-1}C^T (C P_{t|t-1} C^T + R)^{-1} (\bm y_t - C\bm \mu_{t|t-1})  \\
   P_{t|t} &= P_{t|t-1} - P_{t|t-1} C^T (C P_{t|t-1} C^T + R)^{-1} C P_{t|t-1}
 \end{align}
 である。
@@ -144,7 +145,7 @@ $x_t, y_t$の同時分布を求める必要がある。
 \end{equation}
 を定義すると、以下のように書くこともできる。（カルマンフィルタの更新ステップ）
 \begin{align}
-  \mu_{t|t} &= \mu_{t|t-1} + G_t (y_t - C\mu_{t|t-1})  \\
+  \bm \mu_{t|t} &= \bm \mu_{t|t-1} + G_t (\bm y_t - C\bm \mu_{t|t-1})  \\
   P_{t|t} &= (I- G_t C) P_{t|t-1}
 \end{align}
 
