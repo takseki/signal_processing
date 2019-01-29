@@ -74,7 +74,7 @@ $x_t, y_t$の同時分布を求める必要がある。
   \end{pmatrix} w_t
 \end{equation}
 の条件付き分布を求める。
-この式全体を確率変数の線形変換として見れば、期待値と共分散行列は同じように計算できる。
+この式全体を確率変数の線形変換として見れば、期待値と共分散行列は先ほどと同じように計算できる。
 期待値は、
 \begin{equation}
   \begin{pmatrix}
@@ -104,21 +104,39 @@ $x_t, y_t$の同時分布を求める必要がある。
   \end{pmatrix}
 \end{equation}
 である。
-
 ここで、さらに$y_t$を観測した後の$x_t$の条件付き分布
 \begin{equation}
   p(x_{t}|y_1, \dots, y_{t}) = \mathrm N(\mu_{t|t}, P_{t|t})
 \end{equation}
-を求めたい。これは正規分布に対する条件付き分布の一般的な結果を使って計算できる。
-
-期待値は、
-\begin{equation}
-  \mu_{t|t} = \mu_{t|t-1} + P_{t|t-1}C^T (C P_{t|t-1} C^T + R)^{-1} (y_t - C\mu_{t|t-1})  
-\end{equation}
-であり、共分散行列は、
-\begin{equation}
-  P_{t|t} = P_{t|t-1} - P_{t|t-1} C^T (C P_{t|t-1} C^T + R)^{-1} C P_{t|t-1}
-\end{equation}
+を求めたい。これは正規分布に対する条件付き分布の一般的な結果
+\footnote{
+  $\begin{pmatrix}
+    x_{a} \\
+    x_{b}
+  \end{pmatrix}
+  $が期待値
+  $\begin{pmatrix}
+    \mu_{a} \\
+    \mu_{b}
+  \end{pmatrix}
+  $, 共分散行列
+  $\begin{pmatrix}
+    \Sigma_{aa} & \Sigma_{ab} \\
+    \Sigma_{ba} & \Sigma_{bb}
+  \end{pmatrix}
+  $の正規分布であるとき、$x_b$を与えたときの$x_a$の条件付き分布は正規分布となり、
+  期待値と共分散行列は以下のようになる。
+  \begin{align}
+    \mu_{a|b} &= \mu_{a} + \Sigma_{ab} \Sigma_{bb}^{-1} (x_b - \mu_{b}) \\
+    \Sigma_{a|b} &= \Sigma_{aa} - \Sigma_{ab} \Sigma_{bb}^{-1} \Sigma_{ba}
+  \end{align}
+  この導出は例えば、ビショップの「2.3.1 条件付きガウス分布」に載っている。
+}
+を使って計算できる。期待値と共分散行列はそれぞれ、
+\begin{align}
+  \mu_{t|t} &= \mu_{t|t-1} + P_{t|t-1}C^T (C P_{t|t-1} C^T + R)^{-1} (y_t - C\mu_{t|t-1})  \\
+  P_{t|t} &= P_{t|t-1} - P_{t|t-1} C^T (C P_{t|t-1} C^T + R)^{-1} C P_{t|t-1}
+\end{align}
 である。
 これらはカルマンゲイン
 \begin{equation}
@@ -129,5 +147,4 @@ $x_t, y_t$の同時分布を求める必要がある。
   \mu_{t|t} &= \mu_{t|t-1} + G_t (y_t - C\mu_{t|t-1})  \\
   P_{t|t} &= (I- G_t C) P_{t|t-1}
 \end{align}
-
 \end{document}
