@@ -43,6 +43,10 @@ x = np.array([0, 0])
 p = np.array([[0.1, 0],
               [0, 0.1]])
 
+# IIRで良いんじゃね?
+x_iir = 0
+alpha = 0.1
+
 for i in range(1000):
     # system
     sys_x = sys_update(sys_x)
@@ -57,10 +61,13 @@ for i in range(1000):
     x, p = predict(x, p)
     x, p = update(x, p, y)
 
+    # IIR filter
+    x_iir = (1 - alpha) * x_iir + alpha * y
+
     # y    : 観測位置
     # sys_x: 位置と速度の真値
     # x    : 位置と速度の推定値
     # p    : 推定誤差の共分散行列
     #        p[0,0] は位置推定値の分散、p[1,1]は速度推定値の分散
-    print("{0} {1} {2} {3} {4} {5} {6} {7} {8}".format(
-        y, sys_x[0], sys_x[1], x[0], x[1], p[0, 0], p[1, 1], p[0, 1], p[1, 0]))
+    print("{0} {1} {2} {3} {4} {5}".format(
+        y, sys_x[0], sys_x[1], x[0], x[1], x_iir))
